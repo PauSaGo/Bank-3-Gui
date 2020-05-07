@@ -38,13 +38,13 @@ class BankAgentGui extends JFrame implements ActionListener, BankVocabulary {
    final static int WAIT_CONFIRM = 1;
    final static int IN_LINE = 2;
    private int status = IN_PROCESS;
-   private java.util.List accounts = new ArrayList();
-   private JTextField msg, input, acInfo;
-   private JComboBox menu;
-   private JList acList;
-   private JTable opTable;
-   private JButton ok, cancel, quit;
-   private BankClientAgent myAgent;
+   private final java.util.List accounts = new ArrayList();
+   private final JTextField msg, input, acInfo;
+   private final JComboBox menu;
+   private final JList acList;
+   private final JTable opTable;
+   private final JButton ok, cancel, quit;
+   private final BankClientAgent myAgent;
 
 
    public BankAgentGui(BankClientAgent a) {
@@ -140,6 +140,7 @@ class BankAgentGui extends JFrame implements ActionListener, BankVocabulary {
       quit.addActionListener(this);
 
       addWindowListener(new WindowAdapter() {
+         @Override
          public void windowClosing(WindowEvent e) {
             shutDown();
          }
@@ -152,6 +153,7 @@ class BankAgentGui extends JFrame implements ActionListener, BankVocabulary {
                   r.y + (r.height - getHeight())/2);
    }
 
+   @Override
    public void actionPerformed(ActionEvent ae) {
 // ---------------------------------------------
 
@@ -188,7 +190,7 @@ class BankAgentGui extends JFrame implements ActionListener, BankVocabulary {
                           DEPOSIT : WITHDRAWAL;
                GuiEvent ge = new GuiEvent(this, type);
                ge.addParameter(accounts.get(acList.getSelectedIndex()));
-               ge.addParameter(new Float(amount));
+               ge.addParameter(amount);
                myAgent.postGuiEvent(ge);
             }
             catch (Exception ex) { alertInfo("Invalid input. Operation aborted!"); }
@@ -237,7 +239,7 @@ class BankAgentGui extends JFrame implements ActionListener, BankVocabulary {
                                               myAgent.getLocalName(),
                                               JOptionPane.YES_NO_CANCEL_OPTION);
       if (rep == JOptionPane.YES_OPTION) {
-         GuiEvent ge = new GuiEvent(this, myAgent.QUIT);
+         GuiEvent ge = new GuiEvent(this, BankClientAgent.QUIT);
          myAgent.postGuiEvent(ge);
       }
    }
@@ -314,9 +316,9 @@ class BankAgentGui extends JFrame implements ActionListener, BankVocabulary {
          data[i][0] = op.getDate();
          data[i][1] = op.getName();
          if (op.getType() == WITHDRAWAL || op.getType() == ADMIN)
-            data[i][2] = new Float(op.getAmount());
-         else data[i][3] = new Float(op.getAmount());
-         data[i][4] = new Float(op.getBalance());
+            data[i][2] = op.getAmount();
+         else data[i][3] = op.getAmount();
+         data[i][4] = op.getBalance();
       }
       TableDataModel model = (TableDataModel)opTable.getModel();
       model.setData(data);
@@ -342,7 +344,7 @@ class BankAgentGui extends JFrame implements ActionListener, BankVocabulary {
    class TableDataModel extends AbstractTableModel {
 // -------------------------------------------------
 
-   private String[] columns;
+   private final String[] columns;
    private Object[][] data;
 
    public TableDataModel(Object[][] data, String[] columns) {
@@ -351,21 +353,25 @@ class BankAgentGui extends JFrame implements ActionListener, BankVocabulary {
       this.columns = columns;
    }
 
+   @Override
    public int getColumnCount() {
 // -----------------------------  Return the number of columns in the table
       return columns.length;
    }
 
+   @Override
    public int getRowCount() {
 // --------------------------  Return the number of rows in the table
       return data.length;
    }
 
+   @Override
    public String getColumnName(int col) {
 // --------------------------------------  Return the name of a column
       return columns[col];
    }
 
+   @Override
    public Object getValueAt(int row, int col) {
 // --------------------------------------------  Return the value at a specific
 //                                               row and column
@@ -373,6 +379,7 @@ class BankAgentGui extends JFrame implements ActionListener, BankVocabulary {
       return data[row][col];
    }
 
+   @Override
    public Class getColumnClass(int col) {
 // --------------------------------------  Return the class of the values held
 //                                         by a column
@@ -381,6 +388,7 @@ class BankAgentGui extends JFrame implements ActionListener, BankVocabulary {
       return getValueAt(0, col).getClass();
    }
 
+   @Override
    public void setValueAt(Object value, int row, int col){
 // ------------------------------------------------------  Set the value at a specific
 //                                                         row and column

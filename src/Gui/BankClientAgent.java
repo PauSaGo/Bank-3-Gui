@@ -39,12 +39,13 @@ public class BankClientAgent extends GuiAgent implements BankVocabulary {
    private int command = WAIT;
    private int cnt = 0;
    private AID server;
-   private List accounts = new ArrayList();
-   private Codec codec = new SLCodec();
-   private Ontology ontology = BankOntology.getInstance();
+   private final List accounts = new ArrayList();
+   private final Codec codec = new SLCodec();
+   private final Ontology ontology = BankOntology.getInstance();
 
    transient protected BankAgentGui myGui;  // The gui
 
+   @Override
    protected void setup() {
 // ------------------------
 
@@ -57,6 +58,7 @@ public class BankClientAgent extends GuiAgent implements BankVocabulary {
       myGui.setVisible(true);
    }
 
+   @Override
    protected void takeDown() {
 // ---------------------------  Terminate the program properly
 
@@ -67,6 +69,7 @@ public class BankClientAgent extends GuiAgent implements BankVocabulary {
        }
     }
 
+   @Override
    protected void onGuiEvent(GuiEvent ev) {
 // ----------------------------------------  Receive user command via the gui
 
@@ -82,7 +85,7 @@ public class BankClientAgent extends GuiAgent implements BankVocabulary {
       else if (command == DEPOSIT || command == WITHDRAWAL) {
          command = ev.getType();
          Account acc = (Account)ev.getParameter(0);
-         float amount = ((Float)ev.getParameter(1)).floatValue();
+         float amount = ((Float)ev.getParameter(1));
          requestOperation(acc, amount);
       }
       else if (command == BALANCE || command == OPERATIONS) {
@@ -145,6 +148,7 @@ public class BankClientAgent extends GuiAgent implements BankVocabulary {
 
          addSubBehaviour(new WakerBehaviour(myAgent, 5000) {
 
+            @Override
             protected void handleElapsedTimeout() {
                alertGui("No response from server. Please, try later!");
                resetStatusGui();
@@ -163,6 +167,7 @@ public class BankClientAgent extends GuiAgent implements BankVocabulary {
          super(a);
       }
 
+      @Override
       public void action() {
 
          ACLMessage msg = receive(MessageTemplate.MatchSender(server));
@@ -206,14 +211,16 @@ public class BankClientAgent extends GuiAgent implements BankVocabulary {
                   alertGui("\nUnable de decode response from server!");
                }
             }
-            catch (Exception e) { e.printStackTrace(); }
+            catch (Codec.CodecException | OntologyException e) {}
          }
          resetStatusGui();
          finished = true;
       }
 
+      @Override
       public boolean done() { return finished; }
 
+      @Override
       public int onEnd() { command = WAIT; return 0; }
    }
 
@@ -234,7 +241,6 @@ public class BankClientAgent extends GuiAgent implements BankVocabulary {
          else alertGui("Unable to localize server. Please try later!");
       }
       catch (Exception ex) {
-         ex.printStackTrace();
          System.out.println("Failed searching int the DF!");
       }
    }
@@ -260,7 +266,7 @@ public class BankClientAgent extends GuiAgent implements BankVocabulary {
          alertGui("Contacting server... Please wait!");
          addBehaviour(new WaitServerResponse(this));
       }
-      catch (Exception ex) { ex.printStackTrace(); }
+      catch (Codec.CodecException | OntologyException ex) {}
    }
 
 }
